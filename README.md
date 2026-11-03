@@ -12,6 +12,7 @@ A responsive technology and software-development knowledge hub, published as a s
 - Dark and light themes, system-preference detection, and a saved theme preference when browser storage is available.
 - Responsive layouts, keyboard-visible focus, reduced-motion support, and a skip link.
 - Useful content and native expandable guides even when JavaScript is disabled.
+- A podcast section generated directly from [feed.yaml](feed.yaml), including series attribution, episode descriptions, artwork, and native audio players.
 
 ## Publish on GitHub Pages
 
@@ -21,13 +22,15 @@ A responsive technology and software-development knowledge hub, published as a s
 4. Open **[Actions → Deploy website to GitHub Pages](https://github.com/ahmedabroug00/web-test/actions/workflows/deploy-pages.yml)** and select **Run workflow** if the initial push ran before Pages was enabled. If GitHub Actions is disabled for this repository, enable it in repository settings first.
 5. After the deployment succeeds, visit **https://ahmedabroug00.github.io/web-test/**. The deployment job also provides the published URL.
 
-Later changes to the website files on `main` publish automatically. Pull requests do not deploy. The workflow pins official GitHub actions to immutable commit hashes, grants write permissions only to the deployment job, and publishes only the four public website files (plus an empty `.nojekyll` file). Review and refresh action pins periodically for upstream security and compatibility updates.
+Later changes to the website files, YAML feed, audio, artwork, or build script on `main` publish automatically. Pull requests do not deploy. The workflow pins official GitHub actions to immutable commit hashes and grants write permissions only to the deployment job. It uses Ruby's standard YAML parser to render the podcast section, then publishes the generated website, feed, audio, and images (plus an empty `.nojekyll` file). Review and refresh action pins periodically for upstream security and compatibility updates.
 
 GitHub Pages must be available for the repository's visibility and account plan. No custom domain, backend, package installation, or API key is required.
 
 ## Local preview
 
-Open [index.html](index.html) directly in a modern browser, or serve this folder with any static web server. A local HTTP server most closely matches GitHub Pages behavior. There is no build step or npm dependency.
+Open [index.html](index.html) directly in a modern browser to preview the developer guides and design. To preview the podcast content too, run `ruby build.rb` from the repository root and open the generated website in the output directory `_site/`, or serve that directory with any static web server. The source template deliberately shows a build-preview message instead of duplicating episode data.
+
+Ruby 3 or newer is required for the build; the GitHub-hosted Ubuntu runner includes it. No third-party gems or npm packages are required. The build validates required feed fields and local media paths, escapes YAML text before inserting it into HTML, and renders native audio players that work without JavaScript. Feed media paths beginning with `/audio/` or `/images/` are converted to relative URLs so they work under the GitHub Pages project path.
 
 The site uses Google Fonts for DM Sans and Space Grotesk. Browsers request those fonts from Google; system font fallbacks keep the site usable if that service is unavailable. All artwork is original CSS or SVG; there are no external scripts, tracking services, or analytics.
 
@@ -39,6 +42,8 @@ The site uses Google Fonts for DM Sans and Space Grotesk. Browsers request those
 | [styles.css](styles.css) | Theme variables, layout, responsive breakpoints, and reduced-motion behavior |
 | [app.js](app.js) | Search, filtering, theme preferences, and deep links to expanded guides |
 | [favicon.svg](favicon.svg) | Website icon |
+| [feed.yaml](feed.yaml) | Source of truth for podcast metadata and episodes |
+| [build.rb](build.rb) | Parse YAML, validate media, and render the public website |
 | [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml) | Static artifact preparation and GitHub Pages deployment |
 
 To add a guide, copy an existing `article.note-card`, give it a unique `id`, and use one of the existing `data-category` values: `engineering`, `ai`, `devops`, or `tools`. Add its content inside the native `details` element. Update the displayed note number and the **All notes** count when adding or removing guides. Reading times are editorial estimates.
@@ -55,7 +60,9 @@ Use relative paths for website assets so the site works under the `/web-test/` p
 - Check a narrow mobile viewport, keyboard navigation, and reduced-motion settings.
 - Disable JavaScript and confirm the guides remain readable and expandable.
 - Verify the GitHub Actions deployment is successful after publishing.
+- Build the website and confirm each YAML episode has its title, description, publication date, duration, and playable audio in the podcast section.
+- Change an episode in the YAML feed and rebuild; verify the generated page reflects the change without editing the HTML template.
 
 ## Existing podcast material
 
-The original [feed.yaml](feed.yaml), [README-feed.md](README-feed.md), audio recordings, and artwork are preserved unchanged. They describe **The Future in Tech**, a separate series attributed to its original creators. They are not republished as part of this site's Pages artifact, and the website does not imply affiliation with that series or LinkedIn Learning.
+The original [feed.yaml](feed.yaml), audio recordings, and artwork describe **The Future in Tech**, a separate series attributed to its original creators. The YAML is now used to generate the podcast section on every build, and the feed and media are included in the Pages artifact. Existing feed values and media are not modified by the build. The website preserves the author and subtitle from the feed and explicitly states that this independent site is not affiliated with LinkedIn Learning. Confirm the necessary redistribution rights for these recordings and artwork before publishing them.
